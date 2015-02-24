@@ -1,5 +1,9 @@
 FROM centos:7.0.1406
 MAINTAINER ddelmoli <ddelmoli@gmail.com>
+# 
+# Based on the shell scripts by Martin Giffy D'Souza martindsouza 
+# https://github.com/OraOpenSource/oraclexe-apex
+#
 
 #
 # Update and install packages
