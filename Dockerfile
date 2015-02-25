@@ -16,6 +16,7 @@ RUN yum update -y && yum install -y \
    java \
    libaio \
    net-tools \
+   openssh-server \
    passwd \
    unzip \
    which
@@ -67,8 +68,7 @@ ORACLE_DBENABLE=y \n\
 # Configure OpenSSH & set a password for oracle user.
 # You can change this password with:
 # docker exec -ti oracle_app passwd oracle
-RUN ssh-keygen -h -t rsa -f /etc/ssh/ssh_host_rsa_key \
-    && ssh-keygen -h -t dsa -f /etc/ssh/ssh_host_dsa_key \
+RUN ssh-keygen -h -A \
     && echo "oracle" | passwd --stdin oracle \
     && printf '\
 export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe \n\
