@@ -8,6 +8,7 @@ MAINTAINER ddelmoli <ddelmoli@gmail.com>
 #
 # Update and install packages
 #
+USER root
 RUN yum update -y && yum install -y \
    bc \
    firewalld \
@@ -28,9 +29,10 @@ RUN curl -sL https://rpm.nodesource.com/setup | bash - && yum install -y \
    nodejs
 
 #
-# Add oracle-xe rpm
+# Add oracle-xe rpm and apex 4.2.6 zip
 #
 ADD oracle-xe-11.2.0-1.0.x86_64.rpm /tmp/
+ADD apex_4.2.6_en.zip /tmp/
 
 #
 # Install oracle-xe; fake out swap checks
@@ -64,6 +66,27 @@ ORACLE_DBENABLE=y \n\
     && mkdir /var/lock/subsys \
     && /etc/init.d/oracle-xe configure responseFile=/tmp/xe.rsp \
     && rm /tmp/xe.rsp
+
+#
+# Upgrade APEX
+#
+RUN printf '\
+@apexins SYSAUX SYSAUX TEMP /i/ \n\
+' > /tmp/run_apexins.sql \
+   && printf '\
+@apxxepwd Oracle1! \n\
+exit \n\
+' > /tmp/run_apxxepwd.sql \
+   && unzip -q /tmp/apex_4.2.6_en.zip -d /tmp \
+   && sed -i -E "s/HOST = [^)]+/HOST = $HOSTNAME/g" /u01/app/oracle/product/11.2.0/xe/network/admin/listener.ora \
+   && /etc/init.d/oracle-xe start \
+   && cd /tmp/apex \
+   && export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe \
+   && export PATH=$ORACLE_HOME/bin:$PATH \
+   && export ORACLE_SID=XE \
+   && sqlplus sys/oracle as sysdba @../run_apexins.sql \
+   && sqlplus sys/oracle as sysdba @../run_apxxepwd.sql \
+   && /etc/init.d/oracle-xe stop
 
 # Configure OpenSSH & set a password for oracle user.
 # You can change this password with:
