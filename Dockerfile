@@ -84,8 +84,8 @@ exit \n\
    && export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe \
    && export PATH=$ORACLE_HOME/bin:$PATH \
    && export ORACLE_SID=XE \
-   && sqlplus sys/oracle as sysdba @../run_apexins.sql \
-   && sqlplus sys/oracle as sysdba @../run_apxxepwd.sql \
+   && sqlplus -s sys/oracle as sysdba @../run_apexins.sql \
+   && sqlplus -s sys/oracle as sysdba @../run_apxxepwd.sql \
    && /etc/init.d/oracle-xe stop
 
 # Configure OpenSSH & set a password for oracle user.
