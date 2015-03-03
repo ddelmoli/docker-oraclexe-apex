@@ -71,13 +71,6 @@ ORACLE_DBENABLE=y \n\
 # Upgrade APEX
 #
 RUN sha1sum /tmp/apex_4.2.6_en.zip | grep -q "90fbfb21643a9f658c55c6b106815297f66c1761" \
-   && printf '\
-@apexins SYSAUX SYSAUX TEMP /i/ \n\
-' > /tmp/run_apexins.sql \
-   && printf '\
-@apxxepwd Oracle1! \n\
-exit \n\
-' > /tmp/run_apxxepwd.sql \
    && unzip -q /tmp/apex_4.2.6_en.zip -d /tmp \
    && sed -i -E "s/HOST = [^)]+/HOST = $HOSTNAME/g" /u01/app/oracle/product/11.2.0/xe/network/admin/listener.ora \
    && /etc/init.d/oracle-xe start \
@@ -85,9 +78,30 @@ exit \n\
    && export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe \
    && export PATH=$ORACLE_HOME/bin:$PATH \
    && export ORACLE_SID=XE \
-   && sqlplus -silent sys/oracle as sysdba @../run_apexins.sql > /tmp/run_apexins.log \
-   && sqlplus -silent sys/oracle as sysdba @../run_apxxepwd.sql > /tmp/run_apxxepwd.log \
-   && /etc/init.d/oracle-xe stop
+   && printf '\
+@apexins SYSAUX SYSAUX TEMP /i/ \n\
+' > /tmp/run_apexins.sql \
+   && printf '\
+@apxxepwd Oracle1! \n\
+exit \n\
+' > /tmp/run_apxxepwd.sql \
+   && printf '\
+@apex_rest_config_core oracle oracle \n\
+exit \n\
+' > /tmp/run_apex_rest_config_core.sql \
+   && printf '\
+alter user apex_public_user account unlock; \n\
+alter user apex_public_user identified by oracle; \n\
+exec dbms_xdb.sethttpport(0); \n\
+exit \n\
+' > /tmp/run_apex_config.sql \
+   && sqlplus -s sys/oracle as sysdba @../run_apexins.sql > /tmp/run_apexins.log \
+   && sqlplus -s sys/oracle as sysdba @../run_apxxepwd.sql > /tmp/run_apxxepwd.log \
+   && sqlplus -s sys/oracle as sysdba @../run_apex_rest_config_core.sql > /tmp/run_apex_rest_config_core.log \
+   && sqlplus -s sys/oracle as sysdba @../run_apex_config.sql > /tmp/run_apex_config.log \
+   && /etc/init.d/oracle-xe stop \
+   && rm -rf /tmp/apex \
+   && rm /tmp/apex_4.2.6_en.zip
 
 # Configure OpenSSH & set a password for oracle user.
 # You can change this password with:
