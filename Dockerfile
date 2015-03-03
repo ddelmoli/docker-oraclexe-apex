@@ -70,7 +70,8 @@ ORACLE_DBENABLE=y \n\
 #
 # Upgrade APEX
 #
-RUN printf '\
+RUN sha1sum /tmp/apex_4.2.6_en.zip | grep -q "90fbfb21643a9f658c55c6b106815297f66c1761" \
+   && printf '\
 @apexins SYSAUX SYSAUX TEMP /i/ \n\
 ' > /tmp/run_apexins.sql \
    && printf '\
@@ -84,8 +85,8 @@ exit \n\
    && export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe \
    && export PATH=$ORACLE_HOME/bin:$PATH \
    && export ORACLE_SID=XE \
-   && sqlplus -s sys/oracle as sysdba @../run_apexins.sql \
-   && sqlplus -s sys/oracle as sysdba @../run_apxxepwd.sql \
+   && sqlplus -silent sys/oracle as sysdba @../run_apexins.sql > /tmp/run_apexins.log \
+   && sqlplus -silent sys/oracle as sysdba @../run_apxxepwd.sql > /tmp/run_apxxepwd.log \
    && /etc/init.d/oracle-xe stop
 
 # Configure OpenSSH & set a password for oracle user.
